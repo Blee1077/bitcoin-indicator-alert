@@ -1,6 +1,6 @@
 # Bitcoin Indicator Alerts
 
-The purpose of this project is to get the price of Bitcoin to calculate indicator metrics which can determine whether a good buying opportunity is present. It sends an email to my personal email address if thresholds are met for the indicator metrics.
+The purpose of this project is to get the price of Bitcoin to calculate indicator metrics which can determine whether a good buying opportunity is present. It sends an email to my personal email address if thresholds are met for the indicator metrics. It is an AWS Lambda function that is scheduled to run on a daily basis using an EventBridge rule.
 
 This repo contains source code and supporting files for a serverless application that can be deploy with the SAM CLI. It includes the following files and folders.
 
