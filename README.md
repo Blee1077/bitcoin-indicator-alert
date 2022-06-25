@@ -1,6 +1,6 @@
 # Bitcoin Indicator Alerts
 
-:warning: **Undocumented and inefficient code ahead!**: You have been warned.
+:warning: **Undocumented and inefficient code ahead!** :warning:
 
 The purpose of this project is to get the price of Bitcoin to calculate indicator metrics which can determine whether a good buying opportunity is present. It sends an email to my personal email address if thresholds are met for the indicator metrics. It is an AWS Lambda function that is scheduled to run on a daily basis using an EventBridge rule.
 
