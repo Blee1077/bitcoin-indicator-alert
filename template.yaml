@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  bitcoin-indicator-alert
+
+Globals:
+  Function:
+    Timeout: 600
+    MemorySize: 500
+
+Resources:
+  BitcoinIndicatorAlertFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: bitcoin-indicator-alert/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Policies:
+        - S3ReadPolicy:
+            BucketName: "*"
+      Architectures:
+        - x86_64
+      Events:
+        InvocationLevel:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 8 * * ? *)
+            Name: BitcoinIndicatorAlertSchedule
+            Description: Calculates bitcoin indicator metrics and sends email alerts when thresholds are triggered.
+            Enabled: true
+            Input: '{"email_secret_bucket": "crypto-indicator-alert", "email_secret_json_key": "outlook-email-secret.json", "api_secret_bucket": "crypto-indicator-alert", "api_secret_json_key": "glassnode_api_key.json"}'
+
+
+Outputs:
+  BitcoinIndicatorAlertFunction:
+    Description: "Bitcoin Indicator Alert Function ARN"
+    Value: !GetAtt BitcoinIndicatorAlertFunction.Arn
+  BitcoinIndicatorAlertIamRole:
+    Description: "Implicit IAM Role created for Bitcoin Indicator Alert function"
+    Value: !GetAtt BitcoinIndicatorAlertFunctionRole.Arn
