@@ -357,11 +357,11 @@ def lambda_handler(event, context):
     api_secret = load_json(event['api_secret_bucket'], event['api_secret_json_key'])
     email_secret = load_json(event['email_secret_bucket'], event['email_secret_json_key'])
     email = EmailSender(
-            host="smtp.office365.com",
-            port=587,
-            user_name=email_secret['email'],
-            password=email_secret['password']
-        )
+        host=email_secret['host'],
+        port=email_secret['port'],
+        username=email_secret['sender_email'],
+        password=email_secret['password']
+    )
         
     df = init_dataframe(api_key=api_secret['key'])
     
@@ -374,8 +374,8 @@ def lambda_handler(event, context):
     if len(body) > 0:
         email.send(
             subject="Bitcoin Indicator Alert",
-            sender=email_secret['email'],
-            receivers=email_secret['email'],
+            sender=email_secret['sender_email'],
+            receivers=email_secret['receiver_email'],
             text=" \n".join(body),
         )
     
