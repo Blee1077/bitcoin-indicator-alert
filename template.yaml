@@ -7,19 +7,19 @@ Globals:
   Function:
     Timeout: 600
     MemorySize: 500
+    Handler: app.lambda_handler
+    Runtime: python3.9
+    Architectures:
+      - x86_64
 
 Resources:
   BitcoinIndicatorAlertFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: bitcoin-indicator-alert/
-      Handler: app.lambda_handler
-      Runtime: python3.9
       Policies:
         - S3ReadPolicy:
-            BucketName: "*"
-      Architectures:
-        - x86_64
+            BucketName: "crypto-indicator-alert"
       Events:
         InvocationLevel:
           Type: Schedule
@@ -30,6 +30,31 @@ Resources:
             Enabled: true
             Input: '{"email_secret_bucket": "crypto-indicator-alert", "email_secret_json_key": "outlook-email-secret.json", "api_secret_bucket": "crypto-indicator-alert", "api_secret_json_key": "glassnode_api_key.json"}'
 
+  BitcoinIndicatorAlertErrorTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: "superbrandonlee@hotmail.com"
+        Protocol: email
+  
+  ExecutionFailureAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: 'Sends an alarm when the Bitcoin Indicator Alert lambda function fails.'
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+         - Name: FunctionName
+           Value: !Ref BitcoinIndicatorAlertFunction
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 21600
+      Threshold: 1
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref BitcoinIndicatorAlertErrorTopic
 
 Outputs:
   BitcoinIndicatorAlertFunction:
