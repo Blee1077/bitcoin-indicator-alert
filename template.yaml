@@ -5,8 +5,8 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 600
-    MemorySize: 500
+    Timeout: !Ref FunctionTimeout
+    MemorySize: !Ref FunctionMemorySize
     Handler: app.lambda_handler
     Runtime: python3.9
     Architectures:
@@ -16,6 +16,30 @@ Parameters:
   SNSEmailParameter:
     Type: String
     Description: Enter email address for execution failure SNS topic subscription.
+  Schedule:
+    Type: String
+    Description: Cron schedule for function invocation
+    Default: cron(0 8 * * ? *)
+  FunctionTimeout:
+    Type: Number
+    Description: Lambda function timeout
+    Default: 600
+  FunctionMemorySize:
+    Type: Number
+    Description: Lambda function memory size
+    Default: 500
+  EmailSecretBucket:
+    Type: String
+    Description: S3 bucket that contains email secrets
+  EmailSecretJsonKey:
+    Type: String
+    Description: JSON file that contains email secrets
+  ApiSecretBucket:
+    Type: String
+    Description: S3 bucket that contains API secrets
+  ApiSecretJsonKey:
+    Type: String
+    Description: JSON file that contains API secrets
 
 Resources:
   BitcoinIndicatorAlertFunction:
@@ -24,16 +48,21 @@ Resources:
       CodeUri: bitcoin-indicator-alert/
       Policies:
         - S3ReadPolicy:
-            BucketName: "crypto-indicator-alert"
+            BucketName: !Ref EmailSecretBucket
       Events:
         InvocationLevel:
           Type: Schedule
           Properties:
-            Schedule: cron(0 8 * * ? *)
+            Schedule: !Ref Schedule
             Name: BitcoinIndicatorAlertSchedule
             Description: Calculates bitcoin indicator metrics and sends email alerts when thresholds are triggered.
             Enabled: true
-            Input: '{"email_secret_bucket": "crypto-indicator-alert", "email_secret_json_key": "outlook-email-secret.json", "api_secret_bucket": "crypto-indicator-alert", "api_secret_json_key": "glassnode_api_key.json"}'
+            Input: !Sub 
+              - '{"email_secret_bucket": "${EmailSecretBucket}", "email_secret_json_key": "${EmailSecretJsonKey}", "api_secret_bucket": "${ApiSecretBucket}", "api_secret_json_key": "${ApiSecretJsonKey}"}'
+              - EmailSecretBucket: !Ref EmailSecretBucket
+                EmailSecretJsonKey: !Ref EmailSecretJsonKey
+                ApiSecretBucket: !Ref ApiSecretBucket
+                ApiSecretJsonKey: !Ref ApiSecretJsonKey
 
   BitcoinIndicatorAlertErrorTopic:
     Type: AWS::SNS::Topic
